@@ -1,0 +1,54 @@
+{
+  "environmental_analysis": {
+    "location": "London",
+    "temperature": 5.13,
+    "humidity": 88.0,
+    "sunlight_hours": 4.5,
+    "air_quality_index": 128,
+    "air_quality": "Poor"
+  },
+  "indoor_conditions": {
+    "indoor_placement": "window_sill",
+    "water_freq_days": 3,
+    "soil_type": "loamy"
+  },
+  "model_accuracy": 65.0,
+  "plant_recommendations": [
+    {
+      "plant_type": "Herb",
+      "confidence": 36.0
+    },
+    {
+      "plant_type": "Tropical",
+      "confidence": 25.0
+    },
+    {
+      "plant_type": "Fern",
+      "confidence": 20.0
+    }
+  ],
+  "care_instructions": {
+    "watering": "Water when top inch of soil is dry. Most herbs prefer soil on the drier side.",
+    "light": "Most herbs need 4-6 hours of direct sunlight daily.",
+    "soil": "Well-draining soil with moderate fertility. Avoid overly rich soils.",
+    "fertilizing": "Light application of balanced fertilizer every 4-6 weeks during growing season.",
+    "timeline": [
+      {
+        "month": 1,
+        "action": "Indoor growing period. Supplement with grow lights if needed."
+      },
+      {
+        "month": 3,
+        "action": "Begin harvesting outer leaves as plants grow."
+      },
+      {
+        "month": 6,
+        "action": "Peak growing season. Regular harvesting encourages bushier growth."
+      },
+      {
+        "month": 9,
+        "action": "Harvest and preserve remaining herbs before winter dormancy."
+      }
+    ]
+  }
+}

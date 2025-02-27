@@ -1,0 +1,4 @@
+# config.py
+# API keys for various services
+OPENWEATHER_API_KEY = 'c9478deddab23f12cca794d50c8e7897'
+TREFLE_API_KEY = 'Cdas7h3h5AfX3K6e3FTSDZhn8L7YrNvLO2QHYIO8V70'

@@ -1,0 +1,54 @@
+{
+  "environmental_analysis": {
+    "location": "Tokyo",
+    "temperature": 16.4,
+    "humidity": 23.0,
+    "sunlight_hours": 4.5,
+    "air_quality_index": 102,
+    "air_quality": "Poor"
+  },
+  "indoor_conditions": {
+    "indoor_placement": "near_window",
+    "water_freq_days": 7,
+    "soil_type": "sandy"
+  },
+  "model_accuracy": 0.0,
+  "plant_recommendations": [
+    {
+      "plant_type": "Herb",
+      "confidence": 81.0
+    },
+    {
+      "plant_type": "Fern",
+      "confidence": 15.0
+    },
+    {
+      "plant_type": "Air Purifying",
+      "confidence": 2.0
+    }
+  ],
+  "care_instructions": {
+    "watering": "Water when top inch of soil is dry. Most herbs prefer soil on the drier side.",
+    "light": "Most herbs need 4-6 hours of direct sunlight daily.",
+    "soil": "Well-draining soil with moderate fertility. Avoid overly rich soils.",
+    "fertilizing": "Light application of balanced fertilizer every 4-6 weeks during growing season.",
+    "timeline": [
+      {
+        "month": 1,
+        "action": "Indoor growing period. Supplement with grow lights if needed."
+      },
+      {
+        "month": 3,
+        "action": "Begin harvesting outer leaves as plants grow."
+      },
+      {
+        "month": 6,
+        "action": "Peak growing season. Regular harvesting encourages bushier growth."
+      },
+      {
+        "month": 9,
+        "action": "Harvest and preserve remaining herbs before winter dormancy."
+      }
+    ]
+  }
+}
