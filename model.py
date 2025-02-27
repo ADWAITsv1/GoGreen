@@ -15,6 +15,7 @@ import datetime
 import warnings
 import joblib
 import os
+import traceback
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
@@ -32,221 +33,235 @@ OPENWEATHER_API_KEY = 'c9478deddab23f12cca794d50c8e7897'
 # Data Fetching Functions
 def fetch_weather(location):
     """ Fetch weather data from OpenWeather API """
-    url = f'http://api.openweathermap.org/data/2.5/weather?q={location}&appid={OPENWEATHER_API_KEY}&units=metric'
-    response = requests.get(url)
-    
-    if response.status_code != 200:
-        print(f"Error fetching weather data: {response.status_code}")
-        print(f"Response: {response.text}")
-        return pd.DataFrame()
+    try:
+        url = f'http://api.openweathermap.org/data/2.5/weather?q={location}&appid={OPENWEATHER_API_KEY}&units=metric'
+        response = requests.get(url)
         
-    data = response.json()
-    weather = {
-        'location': location,
-        'temperature': data['main']['temp'],
-        'humidity': data['main']['humidity']
-    }
-    return pd.DataFrame([weather])
+        if response.status_code != 200:
+            print(f"Error fetching weather data: {response.status_code}")
+            print(f"Response: {response.text}")
+            return pd.DataFrame()
+            
+        data = response.json()
+        weather = {
+            'location': location,
+            'temperature': float(data['main']['temp']),
+            'humidity': float(data['main']['humidity'])
+        }
+        return pd.DataFrame([weather])
+    except Exception as e:
+        print(f"Exception in fetch_weather: {str(e)}")
+        return pd.DataFrame()
 
 def fetch_environmental_data(location):
     """Fetch real environmental data for a given location"""
-    print(f"Fetching environmental data for {location}...")
-    
-    # Get weather data from OpenWeather API
-    weather_df = fetch_weather(location)
-    
-    if weather_df.empty:
-        print(f"Could not fetch weather data for {location}")
+    try:
+        print(f"Fetching environmental data for {location}...")
+        
+        # Get weather data from OpenWeather API
+        weather_df = fetch_weather(location)
+        
+        if weather_df.empty:
+            print(f"Could not fetch weather data for {location}")
+            return None
+        
+        # Extract data from the DataFrame
+        weather_data = {
+            'location': location,
+            'temperature': float(weather_df['temperature'].iloc[0]),
+            'humidity': float(weather_df['humidity'].iloc[0])
+        }
+        
+        # Add estimated sunlight hours based on location and season
+        latitude_data = {
+            'London': 51.5,
+            'New York': 40.7,
+            'Tokyo': 35.7,
+            'Sydney': -33.9,
+            'Paris': 48.9,
+            'Berlin': 52.5,
+            'Los Angeles': 34.0,
+            'Chicago': 41.9,
+            'Toronto': 43.7,
+            'Beijing': 39.9,
+            'Delhi': 28.6,
+            'Mumbai': 19.1,
+            'Jakarta': -6.2
+        }
+        
+        # Default latitude if location not found
+        latitude = latitude_data.get(location, 40.0)
+        
+        # Estimate sunlight hours based on latitude and current month
+        current_month = datetime.datetime.now().month
+        
+        # Northern hemisphere: more sun in summer, less in winter
+        # Southern hemisphere: opposite
+        if latitude > 0:  # Northern hemisphere
+            sunlight_factor = 1.0 + 0.5 * np.sin((current_month - 6) * np.pi / 6)
+        else:  # Southern hemisphere
+            sunlight_factor = 1.0 + 0.5 * np.sin((current_month) * np.pi / 6)
+        
+        # Base sunlight hours (between 4 and 12)
+        base_hours = 8.0
+        weather_data['sunlight_hours'] = float(round(base_hours * sunlight_factor, 1))
+        
+        # Estimate air quality (mock data for demo)
+        air_quality_index = int(np.random.randint(30, 150))
+        weather_data['air_quality_index'] = air_quality_index
+        
+        if air_quality_index < 50:
+            air_quality = 'Good'
+        elif air_quality_index < 100:
+            air_quality = 'Moderate'
+        else:
+            air_quality = 'Poor'
+        
+        weather_data['air_quality'] = air_quality
+        
+        print(f"Environmental data fetched for {location}")
+        return weather_data
+    except Exception as e:
+        print(f"Exception in fetch_environmental_data: {str(e)}")
+        traceback.print_exc()
         return None
-    
-    # Extract data from the DataFrame
-    weather_data = {
-        'location': location,
-        'temperature': float(weather_df['temperature'].iloc[0]),
-        'humidity': float(weather_df['humidity'].iloc[0])
-    }
-    
-    # Add estimated sunlight hours based on location and season
-    latitude_data = {
-        'London': 51.5,
-        'New York': 40.7,
-        'Tokyo': 35.7,
-        'Sydney': -33.9,
-        'Paris': 48.9,
-        'Berlin': 52.5,
-        'Los Angeles': 34.0,
-        'Chicago': 41.9,
-        'Toronto': 43.7,
-        'Beijing': 39.9,
-        'Delhi': 28.6,
-        'Mumbai': 19.1,
-        'Jakarta': -6.2
-    }
-    
-    # Default latitude if location not found
-    latitude = latitude_data.get(location, 40.0)
-    
-    # Estimate sunlight hours based on latitude and current month
-    current_month = datetime.datetime.now().month
-    
-    # Northern hemisphere: more sun in summer, less in winter
-    # Southern hemisphere: opposite
-    if latitude > 0:  # Northern hemisphere
-        sunlight_factor = 1.0 + 0.5 * np.sin((current_month - 6) * np.pi / 6)
-    else:  # Southern hemisphere
-        sunlight_factor = 1.0 + 0.5 * np.sin((current_month) * np.pi / 6)
-    
-    # Base sunlight hours (between 4 and 12)
-    base_hours = 8.0
-    weather_data['sunlight_hours'] = round(base_hours * sunlight_factor, 1)
-    
-    # Estimate air quality (mock data for demo)
-    air_quality_index = np.random.randint(30, 150)
-    weather_data['air_quality_index'] = air_quality_index
-    
-    if air_quality_index < 50:
-        air_quality = 'Good'
-    elif air_quality_index < 100:
-        air_quality = 'Moderate'
-    else:
-        air_quality = 'Poor'
-    
-    weather_data['air_quality'] = air_quality
-    
-    print(f"Environmental data fetched for {location}")
-    return weather_data
 
 def prepare_training_data(sample_size=500):
     """Create and prepare training data for the model"""
-    print("Preparing training data...")
-    
-    # This would normally come from a database, but we'll create synthetic data for the model
-    # Features: temperature, humidity, sunlight_hours, water_needs, indoor_placement
-    data = {
-        'temperature': np.random.uniform(5, 35, sample_size),  # Range 5°C to 35°C
-        'humidity': np.random.uniform(30, 90, sample_size),    # Range 30% to 90%
-        'sunlight_hours': np.random.uniform(0, 12, sample_size),  # Range 0 to 12 hours
-        'water_freq_days': np.random.choice([1, 2, 3, 7, 14], sample_size),  # Water frequency in days
-        'indoor_placement': np.random.choice(['window_sill', 'near_window', 'away_from_window', 'balcony'], sample_size),
-        'soil_type': np.random.choice(['sandy', 'loamy', 'clay', 'peaty', 'chalky'], sample_size),
-        'air_quality': np.random.choice(['Good', 'Moderate', 'Poor'], sample_size)
-    }
-    
-    # Plant types with optimal growing conditions
-    plant_conditions = {
-        'Succulent': {
-            'temp_range': (10, 35),
-            'humidity_range': (20, 50),
-            'sunlight_range': (4, 12),
-            'water_freq': [7, 14],
-            'indoor_placement': ['window_sill', 'near_window'],
-            'soil_type': ['sandy', 'loamy'],
-            'air_quality': ['Good', 'Moderate', 'Poor']  # Succulents are resilient
-        },
-        'Fern': {
-            'temp_range': (15, 25),
-            'humidity_range': (60, 90),
-            'sunlight_range': (0, 4),
-            'water_freq': [1, 2, 3],
-            'indoor_placement': ['near_window', 'away_from_window'],
-            'soil_type': ['peaty', 'loamy'],
-            'air_quality': ['Good', 'Moderate']  # Ferns prefer cleaner air
-        },
-        'Herb': {
-            'temp_range': (15, 30),
-            'humidity_range': (40, 70),
-            'sunlight_range': (4, 8),
-            'water_freq': [2, 3],
-            'indoor_placement': ['window_sill', 'balcony'],
-            'soil_type': ['loamy', 'sandy'],
-            'air_quality': ['Good', 'Moderate']
-        },
-        'Flowering': {
-            'temp_range': (15, 30),
-            'humidity_range': (40, 80),
-            'sunlight_range': (3, 10),
-            'water_freq': [2, 3, 7],
-            'indoor_placement': ['window_sill', 'near_window', 'balcony'],
-            'soil_type': ['loamy', 'peaty'],
-            'air_quality': ['Good', 'Moderate']
-        },
-        'Tropical': {
-            'temp_range': (20, 35),
-            'humidity_range': (60, 90),
-            'sunlight_range': (2, 8),
-            'water_freq': [1, 2, 3],
-            'indoor_placement': ['near_window', 'away_from_window'],
-            'soil_type': ['peaty', 'loamy'],
-            'air_quality': ['Good']  # Tropicals often prefer clean air
-        },
-        'Air Purifying': {
-            'temp_range': (15, 30),
-            'humidity_range': (40, 70),
-            'sunlight_range': (2, 6),
-            'water_freq': [3, 7],
-            'indoor_placement': ['near_window', 'away_from_window'],
-            'soil_type': ['loamy', 'peaty'],
-            'air_quality': ['Moderate', 'Poor']  # These plants help clean the air
+    try:
+        print("Preparing training data...")
+        
+        # This would normally come from a database, but we'll create synthetic data for the model
+        # Features: temperature, humidity, sunlight_hours, water_needs, indoor_placement
+        data = {
+            'temperature': np.random.uniform(5, 35, sample_size).astype(float),  # Range 5°C to 35°C
+            'humidity': np.random.uniform(30, 90, sample_size).astype(float),    # Range 30% to 90%
+            'sunlight_hours': np.random.uniform(0, 12, sample_size).astype(float),  # Range 0 to 12 hours
+            'water_freq_days': np.random.choice([1, 2, 3, 7, 14], sample_size).astype(int),  # Water frequency in days
+            'indoor_placement': np.random.choice(['window_sill', 'near_window', 'away_from_window', 'balcony'], sample_size),
+            'soil_type': np.random.choice(['sandy', 'loamy', 'clay', 'peaty', 'chalky'], sample_size),
+            'air_quality': np.random.choice(['Good', 'Moderate', 'Poor'], sample_size)
         }
-    }
-    
-    # Determine the best plant type for each set of conditions
-    plant_types = []
-    for i in range(sample_size):
-        temp = data['temperature'][i]
-        humidity = data['humidity'][i]
-        sun = data['sunlight_hours'][i]
-        water = data['water_freq_days'][i]
-        placement = data['indoor_placement'][i]
-        soil = data['soil_type'][i]
-        air = data['air_quality'][i]
         
-        scores = {}
+        # Plant types with optimal growing conditions
+        plant_conditions = {
+            'Succulent': {
+                'temp_range': (10, 35),
+                'humidity_range': (20, 50),
+                'sunlight_range': (4, 12),
+                'water_freq': [7, 14],
+                'indoor_placement': ['window_sill', 'near_window'],
+                'soil_type': ['sandy', 'loamy'],
+                'air_quality': ['Good', 'Moderate', 'Poor']  # Succulents are resilient
+            },
+            'Fern': {
+                'temp_range': (15, 25),
+                'humidity_range': (60, 90),
+                'sunlight_range': (0, 4),
+                'water_freq': [1, 2, 3],
+                'indoor_placement': ['near_window', 'away_from_window'],
+                'soil_type': ['peaty', 'loamy'],
+                'air_quality': ['Good', 'Moderate']  # Ferns prefer cleaner air
+            },
+            'Herb': {
+                'temp_range': (15, 30),
+                'humidity_range': (40, 70),
+                'sunlight_range': (4, 8),
+                'water_freq': [2, 3],
+                'indoor_placement': ['window_sill', 'balcony'],
+                'soil_type': ['loamy', 'sandy'],
+                'air_quality': ['Good', 'Moderate']
+            },
+            'Flowering': {
+                'temp_range': (15, 30),
+                'humidity_range': (40, 80),
+                'sunlight_range': (3, 10),
+                'water_freq': [2, 3, 7],
+                'indoor_placement': ['window_sill', 'near_window', 'balcony'],
+                'soil_type': ['loamy', 'peaty'],
+                'air_quality': ['Good', 'Moderate']
+            },
+            'Tropical': {
+                'temp_range': (20, 35),
+                'humidity_range': (60, 90),
+                'sunlight_range': (2, 8),
+                'water_freq': [1, 2, 3],
+                'indoor_placement': ['near_window', 'away_from_window'],
+                'soil_type': ['peaty', 'loamy'],
+                'air_quality': ['Good']  # Tropicals often prefer clean air
+            },
+            'Air Purifying': {
+                'temp_range': (15, 30),
+                'humidity_range': (40, 70),
+                'sunlight_range': (2, 6),
+                'water_freq': [3, 7],
+                'indoor_placement': ['near_window', 'away_from_window'],
+                'soil_type': ['loamy', 'peaty'],
+                'air_quality': ['Moderate', 'Poor']  # These plants help clean the air
+            }
+        }
         
-        for plant, conditions in plant_conditions.items():
-            score = 0
+        # Determine the best plant type for each set of conditions
+        plant_types = []
+        for i in range(sample_size):
+            temp = data['temperature'][i]
+            humidity = data['humidity'][i]
+            sun = data['sunlight_hours'][i]
+            water = data['water_freq_days'][i]
+            placement = data['indoor_placement'][i]
+            soil = data['soil_type'][i]
+            air = data['air_quality'][i]
             
-            # Temperature match
-            if conditions['temp_range'][0] <= temp <= conditions['temp_range'][1]:
-                score += 1
+            scores = {}
             
-            # Humidity match
-            if conditions['humidity_range'][0] <= humidity <= conditions['humidity_range'][1]:
-                score += 1
-            
-            # Sunlight match
-            if conditions['sunlight_range'][0] <= sun <= conditions['sunlight_range'][1]:
-                score += 1
-            
-            # Water frequency match
-            if water in conditions['water_freq']:
-                score += 1
-            
-            # Placement match
-            if placement in conditions['indoor_placement']:
-                score += 1
-            
-            # Soil type match
-            if soil in conditions['soil_type']:
-                score += 1
+            for plant, conditions in plant_conditions.items():
+                score = 0
                 
-            # Air quality match
-            if air in conditions['air_quality']:
-                score += 1
+                # Temperature match
+                if conditions['temp_range'][0] <= temp <= conditions['temp_range'][1]:
+                    score += 1
+                
+                # Humidity match
+                if conditions['humidity_range'][0] <= humidity <= conditions['humidity_range'][1]:
+                    score += 1
+                
+                # Sunlight match
+                if conditions['sunlight_range'][0] <= sun <= conditions['sunlight_range'][1]:
+                    score += 1
+                
+                # Water frequency match
+                if water in conditions['water_freq']:
+                    score += 1
+                
+                # Placement match
+                if placement in conditions['indoor_placement']:
+                    score += 1
+                
+                # Soil type match
+                if soil in conditions['soil_type']:
+                    score += 1
+                    
+                # Air quality match
+                if air in conditions['air_quality']:
+                    score += 1
+                
+                scores[plant] = score
             
-            scores[plant] = score
+            # Select the plant type with highest score
+            best_plant = max(scores, key=scores.get)
+            plant_types.append(best_plant)
         
-        # Select the plant type with highest score
-        best_plant = max(scores, key=scores.get)
-        plant_types.append(best_plant)
-    
-    data['plant_type'] = plant_types
-    
-    # Convert to DataFrame
-    df = pd.DataFrame(data)
-    print(f"Created synthetic training dataset with {len(df)} examples")
-    
-    return df
+        data['plant_type'] = plant_types
+        
+        # Convert to DataFrame
+        df = pd.DataFrame(data)
+        print(f"Created synthetic training dataset with {len(df)} examples")
+        
+        return df
+    except Exception as e:
+        print(f"Exception in prepare_training_data: {str(e)}")
+        traceback.print_exc()
+        return pd.DataFrame()
 
 class PlantRecommendationModel:
     def __init__(self):
@@ -261,66 +276,76 @@ class PlantRecommendationModel:
     
     def train(self, data):
         """Train the model using provided data"""
-        # Split features and target
-        X = data.drop('plant_type', axis=1)
-        y = data['plant_type']
-        
-        # Store feature names for later reference
-        self.features = list(X.columns)
-        self.plant_types = list(y.unique())
-        
-        # Split into training and testing sets
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        
-        # Define preprocessing for categorical features
-        categorical_features = ['indoor_placement', 'soil_type', 'air_quality']
-        categorical_transformer = OneHotEncoder(handle_unknown='ignore')
-        
-        # Define preprocessing for numerical features
-        numerical_features = ['temperature', 'humidity', 'sunlight_hours', 'water_freq_days']
-        numerical_transformer = StandardScaler()
-        
-        # Combine preprocessing steps
-        preprocessor = ColumnTransformer(
-            transformers=[
-                ('num', numerical_transformer, numerical_features),
-                ('cat', categorical_transformer, categorical_features)
+        try:
+            # Split features and target
+            X = data.drop('plant_type', axis=1)
+            y = data['plant_type']
+            
+            # Store feature names for later reference
+            self.features = list(X.columns)
+            self.plant_types = list(y.unique())
+            
+            # Split into training and testing sets
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+            
+            # Define preprocessing for categorical features
+            categorical_features = ['indoor_placement', 'soil_type', 'air_quality']
+            categorical_transformer = OneHotEncoder(handle_unknown='ignore')
+            
+            # Define preprocessing for numerical features
+            numerical_features = ['temperature', 'humidity', 'sunlight_hours', 'water_freq_days']
+            numerical_transformer = StandardScaler()
+            
+            # Combine preprocessing steps
+            preprocessor = ColumnTransformer(
+                transformers=[
+                    ('num', numerical_transformer, numerical_features),
+                    ('cat', categorical_transformer, categorical_features)
+                ])
+            
+            # Create and train the pipeline with a RandomForest classifier
+            self.model = Pipeline(steps=[
+                ('preprocessor', preprocessor),
+                ('classifier', RandomForestClassifier(n_estimators=100, random_state=42))
             ])
-        
-        # Create and train the pipeline with a RandomForest classifier
-        self.model = Pipeline(steps=[
-            ('preprocessor', preprocessor),
-            ('classifier', RandomForestClassifier(n_estimators=100, random_state=42))
-        ])
-        
-        print("Training plant recommendation model...")
-        self.model.fit(X_train, y_train)
-        
-        # Evaluate the model
-        self.accuracy = self.model.score(X_test, y_test)
-        print(f"Model accuracy: {self.accuracy:.2%}")
-        
-        # Get predictions
-        y_pred = self.model.predict(X_test)
-        
-        # Print classification report
-        print("\nClassification Report:")
-        print(classification_report(y_test, y_pred))
-        
-        return self.accuracy
+            
+            print("Training plant recommendation model...")
+            self.model.fit(X_train, y_train)
+            
+            # Evaluate the model
+            self.accuracy = self.model.score(X_test, y_test)
+            print(f"Model accuracy: {self.accuracy:.2%}")
+            
+            # Get predictions
+            y_pred = self.model.predict(X_test)
+            
+            # Print classification report
+            print("\nClassification Report:")
+            print(classification_report(y_test, y_pred))
+            
+            return self.accuracy
+        except Exception as e:
+            print(f"Exception in train: {str(e)}")
+            traceback.print_exc()
+            return 0.0
     
     def save_model(self):
         """Save the trained model and related information to disk"""
-        if self.model is None:
-            print("No trained model to save")
+        try:
+            if self.model is None:
+                print("No trained model to save")
+                return False
+            
+            print("Saving model to disk...")
+            joblib.dump(self.model, self.model_file)
+            joblib.dump(self.features, self.feature_file)
+            joblib.dump(self.plant_types, self.plant_types_file)
+            print(f"Model saved to {self.model_file}")
+            return True
+        except Exception as e:
+            print(f"Exception in save_model: {str(e)}")
+            traceback.print_exc()
             return False
-        
-        print("Saving model to disk...")
-        joblib.dump(self.model, self.model_file)
-        joblib.dump(self.features, self.feature_file)
-        joblib.dump(self.plant_types, self.plant_types_file)
-        print(f"Model saved to {self.model_file}")
-        return True
     
     def load_model(self):
         """Load a previously trained model from disk"""
@@ -333,6 +358,10 @@ class PlantRecommendationModel:
             return True
         except FileNotFoundError:
             print("No saved model found. Please train a model first.")
+            return False
+        except Exception as e:
+            print(f"Exception in load_model: {str(e)}")
+            traceback.print_exc()
             return False
     
     def predict(self, conditions):
@@ -347,13 +376,26 @@ class PlantRecommendationModel:
         Returns:
             list: Top 3 recommended plant types with confidence scores
         """
-        if self.model is None:
-            print("No model loaded. Please train or load a model first.")
-            return None
-        
         try:
+            if self.model is None:
+                print("No model loaded. Please train or load a model first.")
+                return None
+            
             # Create a copy of conditions to avoid modifying the original
             input_conditions = conditions.copy()
+            
+            # Debug: print input conditions types
+            print("Input conditions:")
+            for key, value in input_conditions.items():
+                print(f"{key}: {value} (type: {type(value).__name__})")
+            
+            # Ensure numeric values are of the correct type
+            for key in ['temperature', 'humidity', 'sunlight_hours']:
+                if key in input_conditions:
+                    input_conditions[key] = float(input_conditions[key])
+            
+            if 'water_freq_days' in input_conditions:
+                input_conditions['water_freq_days'] = int(input_conditions['water_freq_days'])
             
             # Ensure all required features are present
             for feature in self.features:
@@ -364,12 +406,15 @@ class PlantRecommendationModel:
                             input_conditions[feature] = 3
                         else:
                             input_conditions[feature] = 7
+                        print(f"Added default for {feature}: {input_conditions[feature]}")
                     elif feature == 'soil_type':
                         # Default to loamy which is versatile
                         input_conditions[feature] = 'loamy'
+                        print(f"Added default for {feature}: {input_conditions[feature]}")
                     elif feature == 'air_quality':
                         # Default to Moderate if not specified
                         input_conditions[feature] = 'Moderate'
+                        print(f"Added default for {feature}: {input_conditions[feature]}")
                     else:
                         print(f"Missing required feature: {feature}")
                         return None
@@ -391,6 +436,7 @@ class PlantRecommendationModel:
         
         except Exception as e:
             print(f"Error making prediction: {str(e)}")
+            traceback.print_exc()
             return None
     
     def generate_care_instructions(self, plant_type):
@@ -493,99 +539,122 @@ class PlantRecommendationModel:
                 ]
             }
             
-    def analyze_and_recommend(self, location, indoor_conditions):
+    def analyze_and_recommend(self, location, indoor_conditions=None):
         """
         Complete analysis and recommendation based on location and indoor conditions
         
         Args:
             location (str): City name or location
-            indoor_conditions (dict): User input about indoor growing environment
+            indoor_conditions (dict, optional): User input about indoor growing environment
                                      Keys: indoor_placement, water_freq_days, soil_type
                                      
         Returns:
             dict: JSON-compatible dictionary with complete recommendations
         """
-        # Fetch environmental data for the location
-        env_data = fetch_environmental_data(location)
-        
-        if not env_data:
-            return {"error": f"Could not fetch environmental data for {location}"}
-        
-        # Combine environmental and indoor conditions
-        conditions = {**env_data}
-        if indoor_conditions:
-            conditions.update(indoor_conditions)
-        
-        # Ensure we have a model
-        if not self.model:
-            # Try to load, or train if needed
-            if not self.load_model():
-                # Use prepare_training_data function defined above
-                training_data = prepare_training_data(sample_size=1000)
-                self.train(training_data)
-                self.save_model()
-        
-        # Get plant recommendations
-        plant_recommendations = self.predict(conditions)
-        
-        if not plant_recommendations:
-            return {"error": "Could not generate plant recommendations"}
-        
-        # Get care instructions for top recommendation
-        top_plant = plant_recommendations[0]["plant_type"]
-        care_instructions = self.generate_care_instructions(top_plant)
-        
-        # Prepare result in JSON format
-        result = {
-            "environmental_analysis": env_data,
-            "indoor_conditions": indoor_conditions,
-            "model_accuracy": round(float(self.accuracy * 100), 2),
-            "plant_recommendations": plant_recommendations,
-            "care_instructions": care_instructions
-        }
-        
-        return result
+        try:
+            # Initialize indoor_conditions if None
+            if indoor_conditions is None:
+                indoor_conditions = {}
+            
+            # Fetch environmental data for the location
+            env_data = fetch_environmental_data(location)
+            
+            if not env_data:
+                return {"error": f"Could not fetch environmental data for {location}"}
+            
+            # Combine environmental and indoor conditions
+            conditions = {**env_data}
+            if indoor_conditions:
+                conditions.update(indoor_conditions)
+            
+            # Ensure we have a model
+            if not self.model:
+                # Try to load, or train if needed
+                if not self.load_model():
+                    # Use prepare_training_data function defined above
+                    training_data = prepare_training_data(sample_size=1000)
+                    self.train(training_data)
+                    self.save_model()
+            
+            # Get plant recommendations
+            plant_recommendations = self.predict(conditions)
+            
+            if not plant_recommendations:
+                return {"error": "Could not generate plant recommendations"}
+            
+            # Get care instructions for top recommendation
+            top_plant = plant_recommendations[0]["plant_type"]
+            care_instructions = self.generate_care_instructions(top_plant)
+            
+            # Prepare result in JSON format
+            result = {
+                "environmental_analysis": env_data,
+                "indoor_conditions": indoor_conditions,
+                "model_accuracy": round(float(self.accuracy * 100), 2),
+                "plant_recommendations": plant_recommendations,
+                "care_instructions": care_instructions
+            }
+            
+            return result
+        except Exception as e:
+            print(f"Exception in analyze_and_recommend: {str(e)}")
+            traceback.print_exc()
+            return {"error": f"Error in recommendation process: {str(e)}"}
 
 def main():
     """Main function to train and save the model"""
-    # Initialize model
-    model = PlantRecommendationModel()
-    
-    # Check if model already exists
-    if not os.path.exists(model.model_file):
-        # Generate training data
-        training_data = prepare_training_data(sample_size=1000)
+    try:
+        # Initialize model
+        model = PlantRecommendationModel()
         
-        # Train model with prepared data
-        model.train(training_data)
+        # Check if model already exists
+        if not os.path.exists(model.model_file):
+            print("No existing model found. Creating new model...")
+            # Generate training data
+            training_data = prepare_training_data(sample_size=1000)
+            
+            if training_data.empty:
+                print("Failed to generate training data.")
+                return
+            
+            # Train model with prepared data
+            model.train(training_data)
+            
+            # Save the model to disk
+            model.save_model()
+        else:
+            # Load existing model
+            print("Loading existing model...")
+            model.load_model()
         
-        # Save the model to disk
-        model.save_model()
-    else:
-        # Load existing model
-        model.load_model()
-    
-    print("Model is ready to use with Django!")
-    
-    # Test with environmental data and specific indoor conditions
-    test_location = "Jakarta"
-    test_conditions = {
-        "indoor_placement": "window_sill",
-        "water_freq_days": 3,
-        "soil_type": "loamy"
-    }
-    
-    # Generate recommendations
-    recommendations = model.analyze_and_recommend(test_location, test_conditions)
-    
-    # Print the recommendations in JSON format
-    print(f"\nSample recommendations for {test_location}:")
-    print(json.dumps(recommendations, indent=2))
+        print("Model is ready to use with Django!")
+        
+        # Test with environmental data and specific indoor conditions
+        test_location = "Jakarta"
+        test_conditions = {
+            "indoor_placement": "window_sill",
+            "water_freq_days": 3,
+            "soil_type": "loamy"
+        }
+        
+        # Generate recommendations
+        recommendations = model.analyze_and_recommend(test_location, test_conditions)
+        
+        if "error" not in recommendations:
+            # Print the recommendations in JSON format
+            print(f"\nSample recommendations for {test_location}:")
+            print(json.dumps(recommendations, indent=2))
 
-    # Save recommendations to JSON file 
-    with open(f'{test_location.lower()}_recommendations.json', 'w') as f:
-        json.dump(recommendations, f, indent=2)
-    print(f"\nSample recommendations saved to {test_location.lower()}_recommendations.json")
+            # Save recommendations to JSON file 
+            with open(f'{test_location.lower()}_recommendations.json', 'w') as f:
+                json.dump(recommendations, f, indent=2)
+            print(f"\nSample recommendations saved to {test_location.lower()}_recommendations.json")
+        else:
+            print(f"Error generating recommendations: {recommendations['error']}")
+            
+    except Exception as e:
+        print(f"Error in main function: {str(e)}")
+        traceback.print_exc()
 
 if __name__ == "__main__":
     main()
