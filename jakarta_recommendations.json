@@ -1,10 +1,10 @@
 {
   "environmental_analysis": {
     "location": "London",
-    "temperature": 5.13,
-    "humidity": 88.0,
+    "temperature": 5.98,
+    "humidity": 84.0,
     "sunlight_hours": 4.5,
-    "air_quality_index": 128,
+    "air_quality_index": 123,
     "air_quality": "Poor"
   },
   "indoor_conditions": {
@@ -12,42 +12,42 @@
     "water_freq_days": 3,
     "soil_type": "loamy"
   },
-  "model_accuracy": 65.0,
+  "model_accuracy": 73.5,
   "plant_recommendations": [
     {
-      "plant_type": "Herb",
-      "confidence": 36.0
-    },
-    {
       "plant_type": "Tropical",
-      "confidence": 25.0
+      "confidence": 28.999999999999996
     },
     {
       "plant_type": "Fern",
-      "confidence": 20.0
+      "confidence": 19.0
+    },
+    {
+      "plant_type": "Succulent",
+      "confidence": 17.0
     }
   ],
   "care_instructions": {
-    "watering": "Water when top inch of soil is dry. Most herbs prefer soil on the drier side.",
-    "light": "Most herbs need 4-6 hours of direct sunlight daily.",
-    "soil": "Well-draining soil with moderate fertility. Avoid overly rich soils.",
-    "fertilizing": "Light application of balanced fertilizer every 4-6 weeks during growing season.",
+    "watering": "Keep soil consistently moist but not waterlogged. Mist leaves regularly to increase humidity.",
+    "light": "Bright, indirect light. Protection from harsh afternoon sun.",
+    "soil": "Rich, well-draining potting mix with plenty of organic matter.",
+    "fertilizing": "Apply balanced liquid fertilizer every 2-4 weeks during growing season.",
     "timeline": [
       {
         "month": 1,
-        "action": "Indoor growing period. Supplement with grow lights if needed."
+        "action": "Winter maintenance. Keep away from cold drafts and maintain humidity."
       },
       {
         "month": 3,
-        "action": "Begin harvesting outer leaves as plants grow."
+        "action": "Beginning of growth cycle. Good time for repotting if needed."
       },
       {
         "month": 6,
-        "action": "Peak growing season. Regular harvesting encourages bushier growth."
+        "action": "Active growth period. Monitor for pests in warmer weather."
       },
       {
         "month": 9,
-        "action": "Harvest and preserve remaining herbs before winter dormancy."
+        "action": "Growth slows. Reduce watering and fertilizing frequency."
       }
     ]
   }
