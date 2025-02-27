@@ -1,10 +1,10 @@
 {
   "environmental_analysis": {
-    "location": "London",
-    "temperature": 5.98,
-    "humidity": 84.0,
-    "sunlight_hours": 4.5,
-    "air_quality_index": 101,
+    "location": "Jakarta",
+    "temperature": 29.95,
+    "humidity": 72.0,
+    "sunlight_hours": 11.5,
+    "air_quality_index": 132,
     "air_quality": "Poor"
   },
   "indoor_conditions": {
@@ -12,42 +12,42 @@
     "water_freq_days": 3,
     "soil_type": "loamy"
   },
-  "model_accuracy": 79.0,
+  "model_accuracy": 77.5,
   "plant_recommendations": [
     {
-      "plant_type": "Air Purifying",
-      "confidence": 63.0
-    },
-    {
-      "plant_type": "Fern",
-      "confidence": 15.0
+      "plant_type": "Herb",
+      "confidence": 76.0
     },
     {
       "plant_type": "Flowering",
       "confidence": 11.0
+    },
+    {
+      "plant_type": "Air Purifying",
+      "confidence": 5.0
     }
   ],
   "care_instructions": {
-    "watering": "Most air-purifying plants prefer consistent moisture. Water when top inch of soil feels dry.",
-    "light": "Tolerates low to medium light, but grows best in bright, indirect light.",
-    "soil": "Well-draining potting mix with good moisture retention.",
-    "fertilizing": "Apply diluted balanced fertilizer every 4-6 weeks during growing season.",
+    "watering": "Water when top inch of soil is dry. Most herbs prefer soil on the drier side.",
+    "light": "Most herbs need 4-6 hours of direct sunlight daily.",
+    "soil": "Well-draining soil with moderate fertility. Avoid overly rich soils.",
+    "fertilizing": "Light application of balanced fertilizer every 4-6 weeks during growing season.",
     "timeline": [
       {
         "month": 1,
-        "action": "Indoor growing period. Clean leaves to maximize air purification."
+        "action": "Indoor growing period. Supplement with grow lights if needed."
       },
       {
         "month": 3,
-        "action": "Spring growth begins. Good time for repotting if roots are crowded."
+        "action": "Begin harvesting outer leaves as plants grow."
       },
       {
         "month": 6,
-        "action": "Active growth period. Check for adequate space and air circulation."
+        "action": "Peak growing season. Regular harvesting encourages bushier growth."
       },
       {
         "month": 9,
-        "action": "Growth slows. Reduce watering and fertilizing frequency."
+        "action": "Harvest and preserve remaining herbs before winter dormancy."
       }
     ]
   }
