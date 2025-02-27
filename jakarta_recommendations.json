@@ -4,7 +4,7 @@
     "temperature": 5.98,
     "humidity": 84.0,
     "sunlight_hours": 4.5,
-    "air_quality_index": 123,
+    "air_quality_index": 101,
     "air_quality": "Poor"
   },
   "indoor_conditions": {
@@ -12,38 +12,38 @@
     "water_freq_days": 3,
     "soil_type": "loamy"
   },
-  "model_accuracy": 73.5,
+  "model_accuracy": 79.0,
   "plant_recommendations": [
     {
-      "plant_type": "Tropical",
-      "confidence": 28.999999999999996
+      "plant_type": "Air Purifying",
+      "confidence": 63.0
     },
     {
       "plant_type": "Fern",
-      "confidence": 19.0
+      "confidence": 15.0
     },
     {
-      "plant_type": "Succulent",
-      "confidence": 17.0
+      "plant_type": "Flowering",
+      "confidence": 11.0
     }
   ],
   "care_instructions": {
-    "watering": "Keep soil consistently moist but not waterlogged. Mist leaves regularly to increase humidity.",
-    "light": "Bright, indirect light. Protection from harsh afternoon sun.",
-    "soil": "Rich, well-draining potting mix with plenty of organic matter.",
-    "fertilizing": "Apply balanced liquid fertilizer every 2-4 weeks during growing season.",
+    "watering": "Most air-purifying plants prefer consistent moisture. Water when top inch of soil feels dry.",
+    "light": "Tolerates low to medium light, but grows best in bright, indirect light.",
+    "soil": "Well-draining potting mix with good moisture retention.",
+    "fertilizing": "Apply diluted balanced fertilizer every 4-6 weeks during growing season.",
     "timeline": [
       {
         "month": 1,
-        "action": "Winter maintenance. Keep away from cold drafts and maintain humidity."
+        "action": "Indoor growing period. Clean leaves to maximize air purification."
       },
       {
         "month": 3,
-        "action": "Beginning of growth cycle. Good time for repotting if needed."
+        "action": "Spring growth begins. Good time for repotting if roots are crowded."
       },
       {
         "month": 6,
-        "action": "Active growth period. Monitor for pests in warmer weather."
+        "action": "Active growth period. Check for adequate space and air circulation."
       },
       {
         "month": 9,
