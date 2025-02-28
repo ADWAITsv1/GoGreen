@@ -1,0 +1,54 @@
+{
+  "environmental_analysis": {
+    "location": "Jakarta",
+    "temperature": 26.46,
+    "humidity": 86.0,
+    "sunlight_hours": 11.5,
+    "air_quality_index": 74,
+    "air_quality": "Moderate"
+  },
+  "indoor_conditions": {
+    "indoor_placement": "window_sill",
+    "water_freq_days": 3,
+    "soil_type": "loamy"
+  },
+  "model_accuracy": 0.0,
+  "plant_recommendations": [
+    {
+      "plant_type": "Tropical",
+      "confidence": 45.0
+    },
+    {
+      "plant_type": "Flowering",
+      "confidence": 24.0
+    },
+    {
+      "plant_type": "Herb",
+      "confidence": 15.0
+    }
+  ],
+  "care_instructions": {
+    "watering": "Keep soil consistently moist but not waterlogged. Mist leaves regularly to increase humidity.",
+    "light": "Bright, indirect light. Protection from harsh afternoon sun.",
+    "soil": "Rich, well-draining potting mix with plenty of organic matter.",
+    "fertilizing": "Apply balanced liquid fertilizer every 2-4 weeks during growing season.",
+    "timeline": [
+      {
+        "month": 1,
+        "action": "Winter maintenance. Keep away from cold drafts and maintain humidity."
+      },
+      {
+        "month": 3,
+        "action": "Beginning of growth cycle. Good time for repotting if needed."
+      },
+      {
+        "month": 6,
+        "action": "Active growth period. Monitor for pests in warmer weather."
+      },
+      {
+        "month": 9,
+        "action": "Growth slows. Reduce watering and fertilizing frequency."
+      }
+    ]
+  }
+}
